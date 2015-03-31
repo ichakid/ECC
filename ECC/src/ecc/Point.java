@@ -123,4 +123,9 @@ public class Point {
             return r;
         }
     }
+    
+    public String pointToHex(){
+        String r = "" + Long.toHexString(x) + " " + Long.toHexString(y);
+        return r;
+    }
 }

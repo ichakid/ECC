@@ -23,9 +23,12 @@ public class ECC {
     private Point basePoint;
     private long privateKey;
     private Point publicKey;
+    private long k;
+    
     
     public void setEllipticCurve(long p){
         this.ellipticCurve.setP(p);
+        this.ellipticCurve.setEllipticGrup();
     }
     
     public Point getBasePoint() {
@@ -52,42 +55,32 @@ public class ECC {
         this.publicKey = basePoint.perkalian(privateKey);
     }
     
-    public String readFile(String fileToRead){
-            String textRead = "";
-        try (BufferedReader br = new BufferedReader(new FileReader(fileToRead))){
-            String sCurrentLine;
-            while ((sCurrentLine = br.readLine()) != null) {
-                textRead += sCurrentLine;
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return textRead; 
-    }
-    
-    public void writeFile(String textToWrite, String fileToWrite){
-        FileWriter fw = null;
-        try {
-            File file = new File(fileToWrite);
-            // if file doesnt exists, then create it
-            if (!file.exists()) {
-                file.createNewFile();
-            }   fw = new FileWriter(file.getAbsoluteFile());
-            BufferedWriter bw = new BufferedWriter(fw);
-            bw.write(textToWrite);
-            bw.close();
-        } catch (IOException ex) {
-            Logger.getLogger(ECC.class.getName()).log(Level.SEVERE, null, ex);
-        } finally {
-            try {
-                fw.close();
-            } catch (IOException ex) {
-                Logger.getLogger(ECC.class.getName()).log(Level.SEVERE, null, ex);
+    private Point koblitzAlgo(byte b){
+        long m = (int) b;
+        boolean found = false;
+        long x = m * k + 1;
+        long y = -1;
+        long upperBound = m * k + k - 1;
+        while ((!found) && (x < upperBound)){
+            y = ellipticCurve.getY(x);
+            if (y != -1){
+                found = true;
+            } else {
+                x++;
             }
         }
+        return new Point(x, y);
     }
     
-    
+    public String encrypt(byte[] bytes){
+        String cipherText = "" + basePoint.pointToHex() + " ";
+        for (byte b : bytes){
+            Point Pm = koblitzAlgo(b);
+            Pm = Pm.penjumlahan(basePoint.perkalian(k));
+            cipherText += Pm.pointToHex() + " ";
+        }
+        return cipherText;
+    }
     
     /**
      * @param args the command line arguments
