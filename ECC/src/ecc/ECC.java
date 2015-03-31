@@ -5,6 +5,15 @@
  */
 package ecc;
 
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
  *
  * @author User
@@ -46,6 +55,48 @@ public class ECC {
         this.publicKey = basePoint.perkalian(privateKey);
     }
     
+    public void savePrivateKey(String file) throws FileNotFoundException, IOException{
+        byte[] bytes = Long.toHexString(privateKey).getBytes();
+        FileOutputStream stream = new FileOutputStream(file);
+        try {
+            stream.write(bytes);
+        } finally {
+            stream.close();
+        }
+    }
+    
+    public void savePublicKey(String file) throws IOException{
+        byte[] bytes = publicKey.toHexString().getBytes();
+        FileOutputStream stream = new FileOutputStream(file);
+        try {
+            stream.write(bytes);
+        } finally {
+            stream.close();
+        }
+    }
+    
+    public void readPrivateKey(String file){
+        Path path = Paths.get(file);
+        try {
+            byte[] bytes = Files.readAllBytes(path);
+            String hex = new String(bytes);
+            privateKey = Long.parseLong(hex, 16);
+        } catch (IOException ex) {
+            Logger.getLogger(ECC.class.getName()).log(Level.SEVERE, null, ex);
+        }        
+    }
+    
+    public void readPublicKey(String file){
+        Path path = Paths.get(file);
+        try {
+            byte[] bytes = Files.readAllBytes(path);
+            String hex = new String(bytes);
+            publicKey = Point.parsePoint(hex);
+        } catch (IOException ex) {
+            Logger.getLogger(ECC.class.getName()).log(Level.SEVERE, null, ex);
+        }        
+    }
+    
     private Point encoding(byte b){
         int m = (int) b;
         boolean found = false;
@@ -78,23 +129,23 @@ public class ECC {
         return (byte) m;
     }
     
-    public byte[] decrypt(String cipherText){
-        byte[] bytes;
-        int j = 0;
-        String[] splitted = cipherText.split("\\s+");
-        basePoint = Point.parsePoint(splitted[0] + " " + splitted[1]);
-        for (int i=2; i<=splitted.length-2; i+=2){
-            Point p = Point.parsePoint(splitted[i] + " " + splitted[i+1]);
-            bytes[j] = decoding(p);
-            j++;
-        }
-        return bytes;
-    }
+//    public byte[] decrypt(String cipherText){
+//        byte[] bytes;
+//        int j = 0;
+//        String[] splitted = cipherText.split("\\s+");
+//        basePoint = Point.parsePoint(splitted[0] + " " + splitted[1]);
+//        for (int i=2; i<=splitted.length-2; i+=2){
+//            Point p = Point.parsePoint(splitted[i] + " " + splitted[i+1]);
+//            bytes[j] = decoding(p);
+//            j++;
+//        }
+//        return bytes;
+//    }
     
     /**
      * @param args the command line arguments
      */
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         // TODO code application logic here
         Point p = new Point(2, 20);
         Point q = new Point(1, 0);
@@ -102,7 +153,20 @@ public class ECC {
 //        Point r = p.penjumlahan(p);
 //        Point r = p.perkalian(9);
 //        System.out.println("R(" + r.getX() + "," + r.getY() + ")");
-        System.out.println(p.toHexString());
+//        System.out.println(p.toHexString());
+        ECC ecc = new ECC();
+        ecc.setPrivateKey(1);
+        ecc.setBasePoint(p);
+        ecc.setPublicKey();
+        q = ecc.getPublicKey();
+        System.out.println("Pub(" + q.getX() + "," + q.getY() + ")");
+        ecc.savePublicKey("F://key.pub");
+        ecc.readPublicKey("F://key.pub");
+        Point r = ecc.getPublicKey();
+        System.out.println("Pub(" + r.getX() + "," + r.getY() + ")");
+        ecc.savePrivateKey("F://keypri.pri");
+        ecc.readPrivateKey("F://keypri.pri");
+        System.out.println(ecc.getPrivateKey());
     }
     
 }

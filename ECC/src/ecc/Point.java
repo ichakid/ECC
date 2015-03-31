@@ -130,7 +130,8 @@ public class Point {
     }
     
     public static Point parsePoint(String hex){
-        Point p = new Point();
+        String[] splitted = hex.split("\\s+");
+        Point p = new Point(Long.parseLong(splitted[0], 16), Long.parseLong(splitted[1], 16));
         return p;
     }
 }
