@@ -55,14 +55,14 @@ public class Point {
         return r;
     }
     
-    //Mengembalikan titik inverse
+    //Returns the inverse of point
     public Point inverse(){
         Point r = new Point(this.x, -this.y);
         return r;
     }
     
-    //Mengembalikan titik hasil penjumlahan sebuah titik pada dirinya sendiri
-    public Point penjumlahan(Point q){
+    //Returns point result of addition between the point and another point
+    public Point addition(Point q){
         Point r = new Point();
         if (q == O){
             return this.copy();
@@ -73,7 +73,7 @@ public class Point {
         } else if (this.x == q.getX()){
             return O;
         } else {
-            long lambda = (this.y - q.getY())/(this.x - q.getX());  //Menghitung gradien garis
+            long lambda = (this.y - q.getY())/(this.x - q.getX());  //Calculate the gradient of line
             long _x = lambda * lambda - this.x - q.getX();
             long _y = lambda * (this.x - _x) - this.y;
             r.setX(_x);
@@ -82,8 +82,8 @@ public class Point {
         }
     }
     
-    //Mengembalikan titik hasil penjumlahan sebuah titik pada dirinya sendiri
-    public Point penggandaan(){
+    //Returns point result of addition between the point and itself
+    public Point duplication(){
         if (this.y == 0){
             return O;
         } else {
@@ -97,38 +97,40 @@ public class Point {
         }
     }
     
-    //Mengembalikan titik hasil penjumlahan sebuah titik sebanyak k-1 kali terhadap dirinya sendiri
-    public Point pelelaran(long k){
+    //Returns point result of addition between the point and itself for k-1 times
+    public Point iteration(long k){
         Point r = this.copy();
         for (long i=1; i<k-1; i++){
-            r.penjumlahan(this);
+            r.addition(this);
         }
         return r;
     }
     
-    // Perkalian titik diperoleh dengan perulangan dua operasi dasar
-    // kurva eliptik yang sudah dijelaskan:
-    // 1. Penjumlahan titik (P + Q = R)
-    // 2. Penggandaan titik (2P = R)
-    public Point perkalian(long k){
+    //Returns point result of multiplication between the point and scalar k
+    //The point multiplication is obtained by rounding two basic elliptic kurve:
+    //1. Point Addition (P + Q = R)
+    //2. Point Duplication (2P = R)
+    public Point multiplication(long k){
         Point r = new Point();
         if (k == 1){
             return this.copy();
         } else {
-            r = this.copy().perkalian(k/2);
-            r = r.penggandaan();
+            r = this.copy().multiplication(k/2);
+            r = r.duplication();
             if (k % 2 == 1){
-                r = r.penjumlahan(this);
+                r = r.addition(this);
             }
             return r;
         }
     }
     
+    //Returns a string representation of point in the base of 16
     public String toHexString(){
         String r = "" + Long.toHexString(x) + " " + Long.toHexString(y);
         return r;
     }
     
+    //Returns point representation from hexadecimal string
     public static Point parsePoint(String hex){
         String[] splitted = hex.split("\\s+");
         Point p = new Point(Long.parseLong(splitted[0], 16), Long.parseLong(splitted[1], 16));

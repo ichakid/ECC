@@ -12,8 +12,7 @@ import java.math.RoundingMode;
 public class Curve {
     //Elliptic curves we used is short Weierstrass, brainpoolP256t1
     //y^2 = x^3-1x+188
-    
-    private long a = 1;
+        private long a = 1;
     private long b = 6;
     private long p = 11;
     public ArrayList<Point> ellipticGroup;
@@ -26,9 +25,7 @@ public class Curve {
         this.p = p;
     }
     
-    /**
-     * Find all elliptic group of equation y^2 = x^3+ax+b
-     */
+    //Find all elliptic group of equation y^2 = x^3+ax+b
     public void setEllipticGrup(){
        ellipticGroup = new ArrayList<>();
        long y2, aCongruence, y, y3;
@@ -60,9 +57,7 @@ public class Curve {
        }
     }
     
-    /**
-     * 
-     */
+    //Returns y value from a point in curve with x given 
     public long getY(long x) {
         long y2, aCongruence, y = -1, y3;
         y2 = (x*x*x + a*x + b);

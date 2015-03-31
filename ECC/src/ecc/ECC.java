@@ -24,7 +24,6 @@ public class ECC {
     private long privateKey;
     private Point publicKey;
     private long k;
-    private long size;
     
     public void setEllipticCurve(long p){
         this.ellipticCurve.setP(p);
@@ -52,9 +51,10 @@ public class ECC {
     }
 
     public void setPublicKey() {
-        this.publicKey = basePoint.perkalian(privateKey);
+        this.publicKey = basePoint.multiplication(privateKey);
     }
     
+    //Save private key into *.pri file
     public void savePrivateKey(String file) throws FileNotFoundException, IOException{
         byte[] bytes = Long.toHexString(privateKey).getBytes();
         FileOutputStream stream = new FileOutputStream(file);
@@ -65,6 +65,7 @@ public class ECC {
         }
     }
     
+    //Save public key into *.pub file
     public void savePublicKey(String file) throws IOException{
         byte[] bytes = publicKey.toHexString().getBytes();
         FileOutputStream stream = new FileOutputStream(file);
@@ -75,6 +76,7 @@ public class ECC {
         }
     }
     
+    //Read private key from *.pri file
     public void readPrivateKey(String file){
         Path path = Paths.get(file);
         try {
@@ -86,6 +88,7 @@ public class ECC {
         }        
     }
     
+    //Read public key from *.pub file
     public void readPublicKey(String file){
         Path path = Paths.get(file);
         try {
@@ -97,8 +100,9 @@ public class ECC {
         }        
     }
     
-    private Point encoding(byte b){
-        int m = (int) b;
+    //Encode a character into point using Koblitz' method
+    private Point encoding(char c){
+        int m = (int) c;
         boolean found = false;
         long x = m * k + 1;
         long y = -1;
@@ -114,33 +118,58 @@ public class ECC {
         return new Point(x, y);
     }
     
-    public String encrypt(byte[] bytes){
+    //Returns String cipherText in hexadecimal notation
+    public String encrypt(String plainText){
         String cipherText = "" + basePoint.toHexString() + " ";
-        for (byte b : bytes){
-            Point Pm = encoding(b);
-            Pm = Pm.penjumlahan(basePoint.perkalian(k));
+        for (char c : plainText.toCharArray()){
+            Point Pm = encoding(c);
+            Pm = Pm.addition(basePoint.multiplication(k));
             cipherText += Pm.toHexString() + " ";
         }
         return cipherText;
     }
     
-    private byte decoding(Point p){
+    //Decode a point into character using Koblitz' method
+    private char decoding(Point p){
         long m = (p.getX()-1)/k;
-        return (byte) m;
+        return (char) m;
     }
     
-//    public byte[] decrypt(String cipherText){
-//        byte[] bytes;
-//        int j = 0;
-//        String[] splitted = cipherText.split("\\s+");
-//        basePoint = Point.parsePoint(splitted[0] + " " + splitted[1]);
-//        for (int i=2; i<=splitted.length-2; i+=2){
-//            Point p = Point.parsePoint(splitted[i] + " " + splitted[i+1]);
-//            bytes[j] = decoding(p);
-//            j++;
-//        }
-//        return bytes;
-//    }
+    //Returns plainText String for hecadecimal cipherText String
+    public String decrypt(String cipherText){
+        String plainText = "";
+        String[] splitted = cipherText.split("\\s+");
+        basePoint = Point.parsePoint(splitted[0] + " " + splitted[1]);
+        for (int i=2; i<=splitted.length-2; i+=2){
+            Point p = Point.parsePoint(splitted[i] + " " + splitted[i+1]);
+            plainText += decoding(p);
+        }
+        return plainText;
+    }
+    
+    //Write any string into any file
+    public void writeToFile(String str, String file) throws FileNotFoundException, IOException{
+        byte[] bytes = str.getBytes();
+        FileOutputStream stream = new FileOutputStream(file);
+        try {
+            stream.write(bytes);
+        } finally {
+            stream.close();
+        }
+    }
+    
+    //Returns a string representation of any file
+    public String readFile(String file){
+        Path path = Paths.get(file);
+        String str = new String();
+        try {
+            byte[] bytes = Files.readAllBytes(path);
+            str = new String(bytes);
+        } catch (IOException ex) {
+            Logger.getLogger(ECC.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return str;
+    }
     
     /**
      * @param args the command line arguments
