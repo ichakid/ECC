@@ -14,20 +14,19 @@ public class Point {
     private long x;
     private long y;
     private long a;
+    private long p;
     public static Point O = new Point(Long.MAX_VALUE, Long.MAX_VALUE);
 
     public Point() {
         this.x = 0;
         this.y = 0; 
+        this.a = 0;
+        this.p = 0;
     }
     
     public Point(long x, long y) {
         this.x = x;
         this.y = y;
-    }
-
-    public long getA() {
-        return a;
     }
 
     public void setA(long a) {
@@ -123,19 +122,6 @@ public class Point {
             return r;
         }
     }
-    
-    //Returns a string representation of point in the base of 16
-//    public String toHexString(){
-//        String r = "" + Long.toHexString(x) + " " + Long.toHexString(y);
-//        return r;
-//    }
-    
-    //Returns point representation from hexadecimal string
-//    public static Point parsePoint(String hex){
-//        String[] splitted = hex.split("\\s+");
-//        Point p = new Point(Long.parseLong(splitted[0], 16), Long.parseLong(splitted[1], 16));
-//        return p;
-//    }
     
     //Returns a string representation of point
     public String toString(){

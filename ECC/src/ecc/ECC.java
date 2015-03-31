@@ -78,7 +78,7 @@ public class ECC {
     
     //Save private key into *.pri file
     public void savePrivateKey(String file) throws FileNotFoundException, IOException{
-        byte[] bytes = Long.toHexString(privateKey).getBytes();
+        byte[] bytes = Long.toString(privateKey).getBytes();
         FileOutputStream stream = new FileOutputStream(file);
         try {
             stream.write(bytes);
@@ -88,23 +88,23 @@ public class ECC {
     }
     
     //Save public key into *.pub file
-//    public void savePublicKey(String file) throws IOException{
-////        byte[] bytes = publicKey.toHexString().getBytes();
-//        FileOutputStream stream = new FileOutputStream(file);
-//        try {
-//            stream.write(bytes);
-//        } finally {
-//            stream.close();
-//        }
-//    }
+    public void savePublicKey(String file) throws IOException{
+        byte[] bytes = publicKey.toString().getBytes();
+        FileOutputStream stream = new FileOutputStream(file);
+        try {
+            stream.write(bytes);
+        } finally {
+            stream.close();
+        }
+    }
     
     //Read private key from *.pri file
     public void readPrivateKey(String file){
         Path path = Paths.get(file);
         try {
             byte[] bytes = Files.readAllBytes(path);
-            String hex = new String(bytes);
-            privateKey = Long.parseLong(hex, 16);
+            String str = new String(bytes);
+            privateKey = Long.parseLong(str);
         } catch (IOException ex) {
             Logger.getLogger(ECC.class.getName()).log(Level.SEVERE, null, ex);
         }        
@@ -115,8 +115,9 @@ public class ECC {
         Path path = Paths.get(file);
         try {
             byte[] bytes = Files.readAllBytes(path);
-            String hex = new String(bytes);
-//            publicKey = Point.parsePoint(hex);
+            String str = new String(bytes);
+            String[] splitted = str.split("\\s+");
+            publicKey = new Point(Long.parseLong(splitted[0]), Long.parseLong(splitted[1]));
         } catch (IOException ex) {
             Logger.getLogger(ECC.class.getName()).log(Level.SEVERE, null, ex);
         }        
@@ -144,7 +145,7 @@ public class ECC {
     public String encrypt(String plainText) throws Exception{
         String cipherText = "" + basePoint.toString() + " ";
         for (char c : plainText.toCharArray()){
-            Point Pm = encoding(c);
+            Point Pm = encoding(c); Pm.setA(ellipticCurve.getA());
             Pm = Pm.addition(basePoint.multiplication(k));
             cipherText += Pm.toString() + " ";
         }
@@ -163,6 +164,7 @@ public class ECC {
         String cipherString = new String(hexStringToByteArray(cipherText));
         String[] splitted = cipherString.split("\\s+");
         basePoint = new Point(Long.parseLong(splitted[0]), Long.parseLong(splitted[1]));
+        basePoint.setA(ellipticCurve.getA());
         Point temp = basePoint.multiplication(privateKey);
         for (int i=2; i<=splitted.length-2; i+=2){
             Point p = new Point(Long.parseLong(splitted[i]), Long.parseLong(splitted[i+1]));

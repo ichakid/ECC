@@ -10,12 +10,15 @@ import java.math.RoundingMode;
  * @author 
  */
 public class Curve {
-    //Elliptic curves we used is short Weierstrass, brainpoolP256t1
-    //y^2 = x^3-1x+188
-        private long a = 1;
+    //y^2 = x^3+ax+b
+    private long a = 12;
     private long b = 6;
     private long p = 3;
     public ArrayList<Point> ellipticGroup;
+
+    public long getA() {
+        return a;
+    }
 
     public long getP() {
         return p;
