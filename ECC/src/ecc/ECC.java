@@ -5,15 +5,6 @@
  */
 package ecc;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 /**
  *
  * @author User
@@ -24,7 +15,7 @@ public class ECC {
     private long privateKey;
     private Point publicKey;
     private long k;
-    
+    private long size;
     
     public void setEllipticCurve(long p){
         this.ellipticCurve.setP(p);
@@ -55,8 +46,8 @@ public class ECC {
         this.publicKey = basePoint.perkalian(privateKey);
     }
     
-    private Point koblitzAlgo(byte b){
-        long m = (int) b;
+    private Point encoding(byte b){
+        int m = (int) b;
         boolean found = false;
         long x = m * k + 1;
         long y = -1;
@@ -73,13 +64,31 @@ public class ECC {
     }
     
     public String encrypt(byte[] bytes){
-        String cipherText = "" + basePoint.pointToHex() + " ";
+        String cipherText = "" + basePoint.toHexString() + " ";
         for (byte b : bytes){
-            Point Pm = koblitzAlgo(b);
+            Point Pm = encoding(b);
             Pm = Pm.penjumlahan(basePoint.perkalian(k));
-            cipherText += Pm.pointToHex() + " ";
+            cipherText += Pm.toHexString() + " ";
         }
         return cipherText;
+    }
+    
+    private byte decoding(Point p){
+        long m = (p.getX()-1)/k;
+        return (byte) m;
+    }
+    
+    public byte[] decrypt(String cipherText){
+        byte[] bytes;
+        int j = 0;
+        String[] splitted = cipherText.split("\\s+");
+        basePoint = Point.parsePoint(splitted[0] + " " + splitted[1]);
+        for (int i=2; i<=splitted.length-2; i+=2){
+            Point p = Point.parsePoint(splitted[i] + " " + splitted[i+1]);
+            bytes[j] = decoding(p);
+            j++;
+        }
+        return bytes;
     }
     
     /**
@@ -87,12 +96,13 @@ public class ECC {
      */
     public static void main(String[] args) {
         // TODO code application logic here
-        Point p = new Point(2, 8);
+        Point p = new Point(2, 20);
         Point q = new Point(1, 0);
 //        Point r = p.iteration(3);
 //        Point r = p.penjumlahan(p);
-        Point r = p.perkalian(9);
-        System.out.println("R(" + r.getX() + "," + r.getY() + ")");
+//        Point r = p.perkalian(9);
+//        System.out.println("R(" + r.getX() + "," + r.getY() + ")");
+        System.out.println(p.toHexString());
     }
     
 }

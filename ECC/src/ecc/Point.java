@@ -124,8 +124,13 @@ public class Point {
         }
     }
     
-    public String pointToHex(){
+    public String toHexString(){
         String r = "" + Long.toHexString(x) + " " + Long.toHexString(y);
         return r;
+    }
+    
+    public static Point parsePoint(String hex){
+        Point p = new Point();
+        return p;
     }
 }
