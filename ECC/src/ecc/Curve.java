@@ -14,7 +14,7 @@ public class Curve {
     //y^2 = x^3-1x+188
         private long a = 1;
     private long b = 6;
-    private long p = 11;
+    private long p = 3;
     public ArrayList<Point> ellipticGroup;
 
     public long getP() {
@@ -26,15 +26,15 @@ public class Curve {
     }
     
     //Find all elliptic group of equation y^2 = x^3+ax+b
-    public void setEllipticGrup(){
+    public void setEllipticGroup(){
        ellipticGroup = new ArrayList<>();
        long y2, aCongruence, y, y3;
        long x = 0;
        
-       while (x < p-1){
+       while (x <= p-1){
             y2 = (x*x*x + a*x + b);
             aCongruence = LongMath.mod(y2, p);
-            for (int j = 1; j<p-1; j++){
+            for (int j = 1; j<=(p-1); j++){
                 y3 = p*j + aCongruence;
                 if (isPerfectSquare(y3)) {
                     y = LongMath.sqrt(y3, RoundingMode.UP);
@@ -50,10 +50,6 @@ public class Curve {
                 }
             }
             x++;
-       }
-       
-       for (int i =0; i<ellipticGroup.size(); i++){
-           System.out.println(ellipticGroup.get(i).getX() + " " +ellipticGroup.get(i).getY());
        }
     }
     

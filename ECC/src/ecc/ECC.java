@@ -8,9 +8,11 @@ package ecc;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import static java.lang.Math.floor;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -24,10 +26,22 @@ public class ECC {
     private long privateKey;
     private Point publicKey;
     private long k;
+
+    public ECC() {
+        this.ellipticCurve = new Curve();
+        this.basePoint = new Point();
+        this.privateKey = 1;
+        this.publicKey = new Point();
+        this.k = 1;
+    }
+          
+    public ArrayList<Point> getEllipticGroup(){
+        return ellipticCurve.ellipticGroup;
+    }
     
     public void setEllipticCurve(long p){
         this.ellipticCurve.setP(p);
-        this.ellipticCurve.setEllipticGrup();
+        this.ellipticCurve.setEllipticGroup();
     }
     
     public Point getBasePoint() {
@@ -53,6 +67,14 @@ public class ECC {
     public void setPublicKey() {
         this.publicKey = basePoint.multiplication(privateKey);
     }
+
+    public long getK() {
+        return k;
+    }
+
+    public void setK(long k) {
+        this.k = k;
+    }
     
     //Save private key into *.pri file
     public void savePrivateKey(String file) throws FileNotFoundException, IOException{
@@ -66,15 +88,15 @@ public class ECC {
     }
     
     //Save public key into *.pub file
-    public void savePublicKey(String file) throws IOException{
-        byte[] bytes = publicKey.toHexString().getBytes();
-        FileOutputStream stream = new FileOutputStream(file);
-        try {
-            stream.write(bytes);
-        } finally {
-            stream.close();
-        }
-    }
+//    public void savePublicKey(String file) throws IOException{
+////        byte[] bytes = publicKey.toHexString().getBytes();
+//        FileOutputStream stream = new FileOutputStream(file);
+//        try {
+//            stream.write(bytes);
+//        } finally {
+//            stream.close();
+//        }
+//    }
     
     //Read private key from *.pri file
     public void readPrivateKey(String file){
@@ -94,7 +116,7 @@ public class ECC {
         try {
             byte[] bytes = Files.readAllBytes(path);
             String hex = new String(bytes);
-            publicKey = Point.parsePoint(hex);
+//            publicKey = Point.parsePoint(hex);
         } catch (IOException ex) {
             Logger.getLogger(ECC.class.getName()).log(Level.SEVERE, null, ex);
         }        
@@ -119,14 +141,14 @@ public class ECC {
     }
     
     //Returns String cipherText in hexadecimal notation
-    public String encrypt(String plainText){
-        String cipherText = "" + basePoint.toHexString() + " ";
+    public String encrypt(String plainText) throws Exception{
+        String cipherText = "" + basePoint.toString() + " ";
         for (char c : plainText.toCharArray()){
             Point Pm = encoding(c);
             Pm = Pm.addition(basePoint.multiplication(k));
-            cipherText += Pm.toHexString() + " ";
+            cipherText += Pm.toString() + " ";
         }
-        return cipherText;
+        return getHexString(cipherText.getBytes());
     }
     
     //Decode a point into character using Koblitz' method
@@ -135,14 +157,17 @@ public class ECC {
         return (char) m;
     }
     
-    //Returns plainText String for hecadecimal cipherText String
+    //Returns plainText String for hexadecimal cipherText String
     public String decrypt(String cipherText){
         String plainText = "";
-        String[] splitted = cipherText.split("\\s+");
-        basePoint = Point.parsePoint(splitted[0] + " " + splitted[1]);
+        String cipherString = new String(hexStringToByteArray(cipherText));
+        String[] splitted = cipherString.split("\\s+");
+        basePoint = new Point(Long.parseLong(splitted[0]), Long.parseLong(splitted[1]));
+        Point temp = basePoint.multiplication(privateKey);
         for (int i=2; i<=splitted.length-2; i+=2){
-            Point p = Point.parsePoint(splitted[i] + " " + splitted[i+1]);
-            plainText += decoding(p);
+            Point p = new Point(Long.parseLong(splitted[i]), Long.parseLong(splitted[i+1]));
+            Point Pm = p.addition(temp.inverse());
+            plainText += decoding(Pm);
         }
         return plainText;
     }
@@ -171,31 +196,44 @@ public class ECC {
         return str;
     }
     
+    private String getHexString(byte[] b) throws Exception {
+        String result = "";
+        for (int i=0; i < b.length; i++) {
+          result +=
+                Integer.toString( ( b[i] & 0xff ) + 0x100, 16).substring( 1 );
+        }
+        return result;
+    }
+    
+    private byte[] hexStringToByteArray(String s) {
+        int len = s.length();
+        byte[] data = new byte[len / 2];
+        for (int i = 0; i < len; i += 2) {
+            data[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4)
+                                 + Character.digit(s.charAt(i+1), 16));
+        }
+        return data;
+    }
+    
     /**
      * @param args the command line arguments
      */
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, Exception {
         // TODO code application logic here
-        Point p = new Point(2, 20);
-        Point q = new Point(1, 0);
-//        Point r = p.iteration(3);
-//        Point r = p.penjumlahan(p);
-//        Point r = p.perkalian(9);
-//        System.out.println("R(" + r.getX() + "," + r.getY() + ")");
-//        System.out.println(p.toHexString());
         ECC ecc = new ECC();
-        ecc.setPrivateKey(1);
-        ecc.setBasePoint(p);
+        ecc.setEllipticCurve(13);
+        ArrayList<Point> GF = ecc.getEllipticGroup();
+//        for (Point p : GF){
+//            System.out.println("P(" + p.getX() + "," + p.getY() + ")");
+//        }
+        ecc.setBasePoint(new Point(2, 4));
+        ecc.setPrivateKey(5);
         ecc.setPublicKey();
-        q = ecc.getPublicKey();
-        System.out.println("Pub(" + q.getX() + "," + q.getY() + ")");
-        ecc.savePublicKey("F://key.pub");
-        ecc.readPublicKey("F://key.pub");
-        Point r = ecc.getPublicKey();
-        System.out.println("Pub(" + r.getX() + "," + r.getY() + ")");
-        ecc.savePrivateKey("F://keypri.pri");
-        ecc.readPrivateKey("F://keypri.pri");
-        System.out.println(ecc.getPrivateKey());
+        ecc.setK(5);
+        String c = ecc.encrypt("Haloooo");
+        System.out.println("Cipher: " + c);
+        String p = ecc.decrypt(c);
+        System.out.println("Plain: " + p);
     }
     
 }

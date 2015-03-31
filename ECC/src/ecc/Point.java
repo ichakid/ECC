@@ -125,15 +125,21 @@ public class Point {
     }
     
     //Returns a string representation of point in the base of 16
-    public String toHexString(){
-        String r = "" + Long.toHexString(x) + " " + Long.toHexString(y);
-        return r;
-    }
+//    public String toHexString(){
+//        String r = "" + Long.toHexString(x) + " " + Long.toHexString(y);
+//        return r;
+//    }
     
     //Returns point representation from hexadecimal string
-    public static Point parsePoint(String hex){
-        String[] splitted = hex.split("\\s+");
-        Point p = new Point(Long.parseLong(splitted[0], 16), Long.parseLong(splitted[1], 16));
-        return p;
+//    public static Point parsePoint(String hex){
+//        String[] splitted = hex.split("\\s+");
+//        Point p = new Point(Long.parseLong(splitted[0], 16), Long.parseLong(splitted[1], 16));
+//        return p;
+//    }
+    
+    //Returns a string representation of point
+    public String toString(){
+        String r = "" + x + " " + y;
+        return r;
     }
 }
