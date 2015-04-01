@@ -11,9 +11,9 @@ import java.math.RoundingMode;
  */
 public class Curve {
     //y^2 = x^3+ax+b
-    private long a = 12;
-    private long b = 6;
-    private long p = 3;
+    private long a = 6;
+    private long b = 12;
+    private long p = 131;
     public ArrayList<Point> ellipticGroup;
 
     public long getA() {
@@ -42,10 +42,12 @@ public class Curve {
                 if (isPerfectSquare(y3)) {
                     y = LongMath.sqrt(y3, RoundingMode.UP);
                     Point po = new Point(x,y);
+                    po.setA(this.a);
                     if (!ellipticGroup.contains(po)){
                         ellipticGroup.add(po);
                     }
                     Point pp = new Point(x,p-y);
+                    po.setA(this.a);
                     if (!ellipticGroup.contains(pp)) {
                         ellipticGroup.add(pp);
                     }

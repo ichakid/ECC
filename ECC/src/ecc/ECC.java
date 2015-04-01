@@ -5,10 +5,10 @@
  */
 package ecc;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import static java.lang.Math.floor;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -49,6 +49,7 @@ public class ECC {
     }
 
     public void setBasePoint(Point basePoint) {
+        basePoint.setA(ellipticCurve.getA());
         this.basePoint = basePoint;
     }
 
@@ -65,7 +66,9 @@ public class ECC {
     }
 
     public void setPublicKey() {
+        basePoint.setA(ellipticCurve.getA());
         this.publicKey = basePoint.multiplication(privateKey);
+        publicKey.setA(ellipticCurve.getA());
     }
 
     public long getK() {
@@ -118,6 +121,7 @@ public class ECC {
             String str = new String(bytes);
             String[] splitted = str.split("\\s+");
             publicKey = new Point(Long.parseLong(splitted[0]), Long.parseLong(splitted[1]));
+            publicKey.setA(ellipticCurve.getA());
         } catch (IOException ex) {
             Logger.getLogger(ECC.class.getName()).log(Level.SEVERE, null, ex);
         }        
@@ -138,15 +142,19 @@ public class ECC {
                 x++;
             }
         }
-        return new Point(x, y);
+        Point p = new Point(x, y);
+        p.setA(ellipticCurve.getA());
+        return p;
     }
     
     //Returns String cipherText in hexadecimal notation
     public String encrypt(String plainText) throws Exception{
-        String cipherText = "" + basePoint.toString() + " ";
+        basePoint.setA(ellipticCurve.getA());
+        Point kB = basePoint.multiplication(k);
+        String cipherText = "" + kB.toString() + " ";
         for (char c : plainText.toCharArray()){
             Point Pm = encoding(c); Pm.setA(ellipticCurve.getA());
-            Pm = Pm.addition(basePoint.multiplication(k));
+            Pm = Pm.addition(publicKey.multiplication(k));
             cipherText += Pm.toString() + " ";
         }
         return getHexString(cipherText.getBytes());
@@ -163,12 +171,15 @@ public class ECC {
         String plainText = "";
         String cipherString = new String(hexStringToByteArray(cipherText));
         String[] splitted = cipherString.split("\\s+");
-        basePoint = new Point(Long.parseLong(splitted[0]), Long.parseLong(splitted[1]));
-        basePoint.setA(ellipticCurve.getA());
-        Point temp = basePoint.multiplication(privateKey);
+        Point kB = new Point(Long.parseLong(splitted[0]), Long.parseLong(splitted[1]));
+        kB.setA(ellipticCurve.getA());
+        Point temp = kB.multiplication(privateKey);
+        temp.setA(ellipticCurve.getA());
         for (int i=2; i<=splitted.length-2; i+=2){
             Point p = new Point(Long.parseLong(splitted[i]), Long.parseLong(splitted[i+1]));
+            p.setA(ellipticCurve.getA());
             Point Pm = p.addition(temp.inverse());
+            Pm.setA(ellipticCurve.getA());
             plainText += decoding(Pm);
         }
         return plainText;
@@ -177,7 +188,7 @@ public class ECC {
     //Write any string into any file
     public void writeToFile(String str, String file) throws FileNotFoundException, IOException{
         byte[] bytes = str.getBytes();
-        FileOutputStream stream = new FileOutputStream(file);
+        FileOutputStream stream = new FileOutputStream(new File(file));
         try {
             stream.write(bytes);
         } finally {
@@ -221,21 +232,29 @@ public class ECC {
      * @param args the command line arguments
      */
     public static void main(String[] args) throws IOException, Exception {
-        // TODO code application logic here
         ECC ecc = new ECC();
-        ecc.setEllipticCurve(13);
+        ecc.setEllipticCurve(131);
         ArrayList<Point> GF = ecc.getEllipticGroup();
 //        for (Point p : GF){
 //            System.out.println("P(" + p.getX() + "," + p.getY() + ")");
 //        }
-        ecc.setBasePoint(new Point(2, 4));
-        ecc.setPrivateKey(5);
+        ecc.setBasePoint(new Point(0, 55));
+        ecc.setPrivateKey(100);
         ecc.setPublicKey();
-        ecc.setK(5);
-        String c = ecc.encrypt("Haloooo");
-        System.out.println("Cipher: " + c);
-        String p = ecc.decrypt(c);
-        System.out.println("Plain: " + p);
+        Point p = ecc.getPublicKey();
+        System.out.println("P(" + p.getX() + "," + p.getY() + ")");
+        ecc.setK(25);
+        String plain = ecc.readFile("F://grafik.txt");
+        long startTime = System.currentTimeMillis();
+        String cipher = ecc.encrypt(plain);
+        long endTime = System.currentTimeMillis();
+        System.out.println("Encryption took " + (endTime - startTime) + " milliseconds");
+        ecc.writeToFile(cipher, "F://graf.txt");
+        startTime = System.currentTimeMillis();
+        plain = ecc.decrypt(cipher);
+        endTime = System.currentTimeMillis();
+        System.out.println("Decryption took " + (endTime - startTime) + " milliseconds");
+        ecc.writeToFile(plain, "F://graf2.txt");
     }
     
 }

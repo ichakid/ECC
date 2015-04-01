@@ -14,25 +14,24 @@ public class Point {
     private long x;
     private long y;
     private long a;
-    private long p;
     public static Point O = new Point(Long.MAX_VALUE, Long.MAX_VALUE);
 
     public Point() {
         this.x = 0;
-        this.y = 0; 
-        this.a = 0;
-        this.p = 0;
+        this.y = 1; 
+        this.a = 6;
     }
     
     public Point(long x, long y) {
         this.x = x;
         this.y = y;
+        this.a = 6;
     }
 
     public void setA(long a) {
         this.a = a;
     }
-
+    
     public long getX() {
         return x;
     }
@@ -51,12 +50,14 @@ public class Point {
     
     public Point copy(){
         Point r = new Point(this.x, this.y);
+        r.setA(this.a);
         return r;
     }
     
     //Returns the inverse of point
     public Point inverse(){
         Point r = new Point(this.x, -this.y);
+        r.setA(this.a);
         return r;
     }
     
@@ -72,9 +73,9 @@ public class Point {
         } else if (this.x == q.getX()){
             return O;
         } else {
-            long lambda = (this.y - q.getY())/(this.x - q.getX());  //Calculate the gradient of line
-            long _x = lambda * lambda - this.x - q.getX();
-            long _y = lambda * (this.x - _x) - this.y;
+            long lambda = ((this.y - q.getY())/(this.x - q.getX()));  //Calculate the gradient of line
+            long _x = (lambda * lambda - this.x - q.getX());
+            long _y = (lambda * (this.x - _x) - this.y) ;
             r.setX(_x);
             r.setY(_y);
             return r;
@@ -87,9 +88,10 @@ public class Point {
             return O;
         } else {
             Point r = new Point();
-            long lambda = (3 * this.x * this.x + this.a)/(2 * this.y);  //Menghitung gradien garis
-            long _x = lambda * lambda - 2 * this.x;
-            long _y = lambda * (this.x - _x) - this.y;
+            long lambda = (3 * this.x * this.x + this.a)/(2 * y);  //Menghitung gradien garis
+            lambda = lambda ;
+            long _x = (lambda * lambda - 2 * this.x) ;
+            long _y = ((lambda * (this.x - _x) - this.y)) ;
             r.setX(_x);
             r.setY(_y);            
             return r;
@@ -111,14 +113,17 @@ public class Point {
     //2. Point Duplication (2P = R)
     public Point multiplication(long k){
         Point r = new Point();
+        if (k == 0){
+            return O;
+        }
         if (k == 1){
             return this.copy();
+        } else if (k % 2 == 1) {
+            r = this.addition(this.multiplication(k-1));
+            return r;
         } else {
-            r = this.copy().multiplication(k/2);
-            r = r.duplication();
-            if (k % 2 == 1){
-                r = r.addition(this);
-            }
+            Point temp = this.duplication();
+            r = temp.multiplication(k/2);
             return r;
         }
     }
