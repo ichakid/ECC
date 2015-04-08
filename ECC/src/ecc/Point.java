@@ -83,7 +83,7 @@ public class Point {
     }
     
     //Returns point result of addition between the point and itself
-    public Point duplication(){
+    public Point doubling(){
         if (this.y == 0){
             return O;
         } else {
@@ -110,7 +110,7 @@ public class Point {
     //Returns point result of multiplication between the point and scalar k
     //The point multiplication is obtained by rounding two basic elliptic kurve:
     //1. Point Addition (P + Q = R)
-    //2. Point Duplication (2P = R)
+    //2. Point Doubling (2P = R)
     public Point multiplication(long k){
         Point r = new Point();
         if (k == 0){
@@ -122,7 +122,7 @@ public class Point {
             r = this.addition(this.multiplication(k-1));
             return r;
         } else {
-            Point temp = this.duplication();
+            Point temp = this.doubling();
             r = temp.multiplication(k/2);
             return r;
         }
